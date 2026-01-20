@@ -92,7 +92,8 @@ function buffer_init()
         textopdfviewerrefresh = "none",
         textopdfforwardjump = "sioyek --inverse-search 'nvim --headless -es --cmd \"lua require('\"'\"'knaphelper'\"'\"').relayjump('\"'\"'%servername%'\"'\"','\"'\"'%1'\"'\"',%2,%3)\"' --reuse-window --forward-search-file %srcfile% --forward-search-line %line% %outputfile%",
         textopdfshorterror = "A=%outputfile% ; LOGFILE=\"${A%.pdf}.log\" ; rubber-info \"$LOGFILE\" 2>&1 | head -n 1",
-        delay = 250
+        delay = 250,
+        verbose = true
     }
     -- merge settings; buffer and global take precedent over default
     bsettings = vim.tbl_extend("keep", bsettings, dsettings)
@@ -250,7 +251,9 @@ function forward_jump()
     end
     -- fill in details of command
     fjcmd = fill_in_cmd(fjcmd)
-    print("Attempting to jump to matching location.")
+    if vim.b.knap_settings.verbose then
+        print("Attempting to jump to matching location.")
+    end
     local fjprecmd = ''
     if (vim.b.knap_docroot) then
         fjprecmd = 'cd "' .. dirname(vim.b.knap_docroot) .. '" && '
@@ -338,7 +341,9 @@ function is_running(pid)
     local procname = vim.b.knap_viewer_launch_cmd:gsub('.*;%s*','')
     procname = procname:gsub('.*&&%s*','')
     procname = procname:gsub('%s.*','')
-    print('is_running  '.. procname)
+    if vim.b.knap_settings.verbose then
+        print('is_running  '.. procname)
+    end
     running = os.execute('pgrep "' .. procname .. '"  > ' ..  null_out .. ' 2>&1' )
     return running
 end
@@ -352,12 +357,16 @@ function jump(filename,line,column)
     if (jumpbn == bufbn) then
         -- if they match then move cursor
         api.nvim_win_set_cursor(0,{line,column})
-        print('jumping to line ' .. tostring(line) .. ' col ' ..
-            tostring(column))
+        if vim.b.knap_settings.verbose then
+            print('jumping to line ' .. tostring(line) .. ' col ' ..
+                tostring(column))
+        end
     else
         -- if not, just report where the destination is
-        print('jump spot at line ' .. tostring(line) .. ' col ' ..
-            tostring(column) .. ' in ' .. filename)
+        if vim.b.knap_settings.verbose then
+            print('jump spot at line ' .. tostring(line) .. ' col ' ..
+                tostring(column) .. ' in ' .. filename)
+        end
     end
 end
 
@@ -440,11 +449,17 @@ function on_exit(jobid, exitcode, event)
         -- process was successful
         if (vim.b.knap_viewer_launched) then
             -- if viewer launched already, refresh it
-            print("process successful; refreshing preview")
+            if vim.b.knap_settings.verbose then
+                if vim.b.knap_settings.verbose then
+                    print("process successful; refreshing preview")
+                end
+            end
             refresh_viewer()
         else
             -- if viewer not launched already; launch it
-            print("process successful; launching preview")
+            if vim.b.knap_settings.verbose then
+                print("process successful; launching preview")
+            end
             launch_viewer()
         end
     else
@@ -660,7 +675,9 @@ function start_processing(bufcontents)
         -- close stdin to the job
         vim.fn.chanclose(vim.b.knap_process_job, 'stdin')
     end
-    print("knap routine started")
+    if vim.b.knap_settings.verbose then
+        print("knap routine started")
+    end
 end
 
 -- turn auto-previewing off (actually takes effect when restart_timer
@@ -671,7 +688,9 @@ function stop_autopreviewing(report)
     end
     vim.b.knap_autopreviewing = false
     if (report) then
-        print('autopreview stopped')
+        if vim.b.knap_settings.verbose then
+            print('autopreview stopped')
+        end
     end
 end
 
