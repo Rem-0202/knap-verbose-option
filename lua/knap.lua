@@ -450,9 +450,7 @@ function on_exit(jobid, exitcode, event)
         if (vim.b.knap_viewer_launched) then
             -- if viewer launched already, refresh it
             if vim.b.knap_settings.verbose then
-                if vim.b.knap_settings.verbose then
-                    print("process successful; refreshing preview")
-                end
+                print("process successful; refreshing preview")
             end
             refresh_viewer()
         else
